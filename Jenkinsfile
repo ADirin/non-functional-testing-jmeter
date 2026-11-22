@@ -10,6 +10,10 @@ pipeline {
         DOCKERHUB_CREDENTIALS_ID = 'Docker_Hub'
     }
 
+    tools {
+        maven 'Maven3'
+    }
+
     stages {
         stage('Checkout GitHub Repo') {
             steps {
@@ -17,9 +21,14 @@ pipeline {
                         branches: [[name: '*/master']],
                         userRemoteConfigs: [[
                                                     url: 'https://github.com/ADirin/non-functional-testing-jmeter.git'
-                                                    // credentialsId: 'github-credentials-id' // Uncomment if your repo is private
                                             ]]
                 )
+            }
+        }
+
+        stage('Build & Unit Test') {
+            steps {
+                bat 'mvn clean test'
             }
         }
 
@@ -38,8 +47,12 @@ pipeline {
                     bat """
                         sonar-scanner ^
                         -Dsonar.projectKey=DemoApp ^
-                        -Dsonar.sources=. ^
                         -Dsonar.projectName=DemoApp ^
+                        -Dsonar.sources=src/main/java ^
+                        -Dsonar.tests=src/test/java ^
+                        -Dsonar.java.binaries=target/classes ^
+                        -Dsonar.java.test.binaries=target/test-classes ^
+                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml ^
                         -Dsonar.host.url=http://localhost:9000 ^
                         -Dsonar.token=${env.SONAR_TOKEN}
                     """
