@@ -2,7 +2,7 @@ package com.example.demo;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class DemoAppTest {
 
@@ -19,6 +19,6 @@ class DemoAppTest {
         Thread.sleep(50);
         worker.interrupt();
         worker.join(1000);
-        assertTrue(!worker.isAlive(), "Worker thread should exit cleanly after interruption");
+        assertFalse(worker.isAlive(), "Worker thread should exit cleanly after interruption");
     }
 }
