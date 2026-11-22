@@ -6,9 +6,8 @@ pipeline {
         JMETER_HOME = 'C:\\Tools\\apache-jmeter-5.6.3'
         PATH = "${JAVA_HOME}\\bin;${JMETER_HOME}\\bin;${env.PATH}"
         SONARQUBE_SERVER = 'SonarQubeServer'
-        SONAR_TOKEN = credentials('SONAR_TOKEN') //make sure a right token is selected
+        SONAR_TOKEN = credentials('SONAR_TOKEN')
         DOCKERHUB_CREDENTIALS_ID = 'Docker_Hub'
-
     }
 
     stages {
@@ -32,26 +31,31 @@ pipeline {
                 '''
             }
         }
-    }
-    stage('SonarQube Analysis') {
-        steps {
-            withSonarQubeEnv("${env.SONARQUBE_SERVER}") {
-                bat """
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${env.SONARQUBE_SERVER}") {
+                    bat """
                         sonar-scanner ^
-                        -Dsonar.projectKey=TimeCalculatorApp ^
-                        -Dsonar.sources=src ^
-                        -Dsonar.projectName=TimeCalculatorApp ^
+                        -Dsonar.projectKey=DemoApp ^
+                        -Dsonar.sources=. ^
+                        -Dsonar.projectName=DemoApp ^
                         -Dsonar.host.url=http://localhost:9000 ^
-                        -Dsonar.login=${env.SONAR_TOKEN} ^
-                        -Dsonar.java.binaries=target/classes
+                        -Dsonar.token=${env.SONAR_TOKEN}
                     """
+                }
             }
         }
     }
+
     post {
         always {
             archiveArtifacts artifacts: 'result.jtl', allowEmptyArchive: true
-            perfReport sourceDataFiles: 'result.jtl'
+            script {
+                if (fileExists('result.jtl')) {
+                    perfReport sourceDataFiles: 'result.jtl'
+                }
+            }
         }
     }
 }
